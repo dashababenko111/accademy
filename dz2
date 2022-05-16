@@ -1,0 +1,68 @@
+import random
+from time import sleep
+
+class Student:
+    def __init__(self, name):
+        self.name = name
+        self.progress = 0
+        self.gladness = 0
+        self.money = 50
+    def greeting(self):
+        print(f"I am {self.name}")
+    def rest(self):
+
+        upress = random.randint(1, 3)
+        print(f"{self.name} | gladness up on {upress}. Now gladness is {self.gladness + upress}")
+        self.gladness += upress
+    def study(self):
+
+        downrest = random.randint(1, 3)
+        upprogress = random.randint(1, 3)
+        print(f"{self.name} | Progress up on {upprogress}. Now progess is {self.progress + upprogress}. Gladness down on {downrest}. Now gladness is {self.gladness - downrest}")
+        self.gladness  -= downrest
+        self.progress += upprogress
+    def work(self):
+        upmoney = random.randint(10, 20)
+        upprogress = random.randint(1, 2)
+        print(f"{self.name} | Money up on {upmoney}. Now progess is {self.money + upmoney}. Progress up on {upprogress}. Now progress is {self.progress - upprogress}")
+        self.money += upmoney
+        self.progress += upprogress
+    def pwin(self):
+        print(f"{self.name} первый достиг максимальный прогресс")
+    def gwin(self):
+        print(f"{self.name} первый достиг максимальное счастье")
+
+students = []
+students.append(Student("Maxim"))
+students.append(Student("Vanya"))
+students.append(Student("Kirill"))
+students.append(Student("Anya"))
+students.append(Student("Lena"))
+
+progress_winner = None
+gladeness_winner = None
+money_winner = None
+
+day = 1
+
+while True:
+
+    print("Day: ", day)
+    for student in students:
+        student.money -= 4
+        actions = [student.rest, student.study, student.work]
+        random.choice(actions)()
+        if student.gladness >= 100 and not gladeness_winner:
+            gladeness_winner = student
+        if student.progress >= 100 and not progress_winner:
+            progress_winner = student
+        if student.money >= 1000 and not money_winner:
+            money_winner = student
+
+        day += 1
+
+    if progress_winner and gladeness_winner and money_winner:
+            break
+
+progress_winner.pwin()
+gladeness_winner.gwin()
