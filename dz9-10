@@ -1,0 +1,32 @@
+class car{
+    private:
+    std::string model, color; 
+    float run;
+  public:
+    car(std::string model, std::string color, float run){
+    this->model = model;
+    this->color = color;
+    this->run = run;
+    }
+    void RunIncremence(int
+run){
+      this->run += run;
+    }
+    void Show(){
+        std:: cout << "model: " << model << std::endl;
+        std::cout << "color: " << color << std::endl;
+        std::cout << "run: " << run << " km" << std::endl;
+    }
+};
+int main(){
+    std:: string model = "VAZ 2106", color = "white";
+    float run = 26000.0;
+    car MyFirstCar(model, color, run);
+    MyFirstCar.Show();
+    std::cout << "present-day run: ";
+    std::cin >> run;
+    MyFirstCar.RunIncremence
+run;
+MyFirstCar.Show();
+    return 0;
+}
