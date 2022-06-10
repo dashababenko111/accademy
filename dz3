@@ -1,0 +1,288 @@
+import random
+import json
+
+from time import sleep
+
+class Human:
+    def __init__(self, name, places=None):
+        self.name = name
+        self.gladness = 50
+        self.money = 100
+        try:
+            self.location = random.choice(places)
+        except TypeError:
+            self.location = None
+    def rest(self):
+        self.gladness += random.randint(1, 3)
+        self.money -= random.randint(2, 5)
+        if self.location:
+            self.gladness += self.location.gladness
+            self.money -= self.location.money
+    def work(self):
+        self.gladness -= random.randint(1, 2)
+        self.money += random.randint(5, 10)
+    def travel(self, place):
+        if self.location:
+            self.location.remove(self)
+        self.location = place
+        self.location.add(self)
+
+class Work(Human):
+    def work(self):
+        self.gladness -= random.randint(1, 2)
+        self.money += random.randint(5, 10)
+
+class Place:
+    def __init__(self, name, bonus):
+        self.name = name
+        self.humans = []
+        self.gladness = bonus
+        self.money = bonus
+    def all(self):
+        return self.humans
+    def add(self, human):
+        if not human in self.humans:
+            self.humans.append(human)
+    def remove(self, human):
+        if human in self.humans:
+            self.humans.remove(human)
+
+class NPCs:
+    def __init__(self):
+        self.players = []
+    def add(self, human):
+        if not human in self.players:
+            self.players.append(human)
+    def remove(self, human):
+        if human in self.players:
+            self.players.remove(human)
+    def get(self):
+        #Функция-генератор возвращает людей по одному. Когда люди кончились, выдаем ошиьку StopItteration
+        for player in self.players:
+            yield player
+        raise StopIteration
+
+class Car:
+    def __init__(self, n, y, price):
+        self.name = n
+        self.year = y
+        self.price = price
+    def buy(self, human):        
+        if human.money >= self.price:
+            human.money -= self.price
+            self.owner = human
+            human.car = self
+            print(f"{human.name} купил {self.name}")
+        else:
+            print(f"Недостаточно денег у {human.name}")
+
+class NPC(Human):
+    def __init__(self, name, places=None):
+        super().__init__(name, places)
+        self.relationship = 0
+
+class Player(Human):
+    def __init__(self, name, h, w):
+        super().__init__(name, home)
+        self.height = h
+        self.weight = w
+    def save(self):
+        with open('./save.json', 'w') as f:
+            data = {}
+            data["name"] = self.name
+            data["h"] = self.height
+            data["w"] = self.weight
+            json.dump(data, f)
+    def actions(self):
+        print("Выберите действие: ")
+        print("1. Отдохнуть")
+        print("2. Пойти на работу")
+        print("3. Купить машину")
+        print("4. Баланс")
+        print("5. Перейти в локацию")
+        print("6. Люди рядом")
+    def day(self):
+        choice = int(input("-> "))
+        if choice == 1:
+            self.rest()
+        elif choice == 2:
+            self.work()
+        elif choice == 3:
+            print("Машины: ")
+            for i in range(len(autopark)):
+                print(f"{i + 1}. {autopark[i].name}, {autopark[i].price}")
+            choice = int(input("-> "))
+            autopark[choice - 1].buy(self)
+        elif choice == 4:
+            print(f"Ваш баланс: {player.money}")
+            self.day()
+        elif choice == 5:
+            print("Места: ")
+            for i in range(len(places)):
+                print(i + 1, places[i].name)
+            choice = int(input("-> "))
+            self.travel(places[choice - 1])
+        elif choice == 6:
+            print("Люди рядом")
+            humans = self.location.humans
+            for i in range(len(humans)):
+                print(f"{i + 1}. {humans[i].name}")
+            choice = int(input("-> "))
+            print("Действия: ")
+
+            choice2 = int(input("-> "))
+            player_actions(self, humans[choice - 1])
+
+class Action:
+    def __init__(self, name, duo, relation, money, gladness, condition=0):
+        self.name = name
+        self.duo = duo
+        self.relation = relation
+        self.money = money
+        self.gladness = gladness
+        self.condition = condition
+    def do(self, initiator, target):
+        #Если инициатор initiator плеер, то relation не добавляем
+        if target.relationship >= self.condition:
+            if isinstance(initiator, Player) and isinstance(target, NPC):
+                target.relationship += self.relation
+            if self.duo:
+                initiator.money += self.money
+                initiator.gladness += self.gladness
+                target.money += self.money
+                target.gladness += self.gladness
+            else:
+                initiator.money += self.money
+                initiator.gladness += self.gladness
+                target.money -= self.money
+                target.gladness -= self.gladness
+        else:
+            print("Недостаточный уровень отношений")
+
+
+class Thief(Human):
+    def __init__(self, name, places):
+        super().__init__(name, places)
+        self.stength = random.randint(5, 20)
+
+    def steal(self, human):
+        human.money -= self.stength
+        thief.money += self.stength
+        print(f"Вор обворовал {human.name}")
+
+
+npcs = None
+autopark = None
+places = None
+player = None
+thief = None
+home = None
+player_actions = None
+
+def game_start():
+    global npcs
+    global autopark
+    global thief
+    global places
+    global home
+    global player_actions
+
+    player_actions = [
+        Action("Hug", True, 10, 0, 1, -100),
+        Action("Hug", True, 10, 0, 1, -100),
+        Action("Hug", True, 10, 0, 1, -100)
+    ]
+
+    thief = Thief("Vitaliy", places)
+
+    npcs = NPCs()
+    home = Place("Home", 0),
+    places = [
+        home,
+        Place("Park", 3),
+        Place("Museum", 5),
+        Place("Cafe", 10),
+    ]
+
+    human_1 = NPC("Vanya", places)
+    human_2 = NPC("Maxim", places)
+    human_3 = NPC("Ilya", places)
+    human_4 = NPC("Stepan", places)
+    human_5 = NPC("Andrey", places)
+    human_6 = NPC("Kristina", places)
+    human_7 = NPC("Alina", places)
+    human_8 = NPC("Alex", places)
+
+    npcs.add(human_1)
+    npcs.add(human_2)
+    npcs.add(human_3)
+    npcs.add(human_4)
+    npcs.add(human_5)
+    npcs.add(human_6)
+    npcs.add(human_7)
+    npcs.add(human_8)
+
+    autopark = [
+        Car("BMW", 2022, 200),
+        Car("Bentli", 2018, 300),
+        Car("Bugatti", 2016, 400),
+    ]
+
+
+
+def create_player():
+    global player
+    h = input("Введите рост персонажа: ")
+    w = input("Введите вес персонажа: ")
+    name = input("Введите имя персонажа: ")
+    player = Player(name, h, w)
+    player.save()
+
+def init_player():
+    global player
+    try:
+        with open('./save.json') as json_file:
+            data = json.load(json_file)
+            if not data:
+                create_player()
+            else:
+                player = Player(data["name"], data["h"], data["w"])
+        npcs.add(player)
+    except:
+        print("Нет файла сохранений в папке файла запуска. Создайте или переместите save.json")
+        exit()
+
+game_start()
+init_player()
+
+day = 1
+while True:
+    print("Day: ", day)
+    print("Location: ", player.location.name)
+    print("Money: ", player.money)
+    print("Gladness: ", player.gladness)
+    player.actions()
+    player.day()
+    gen = npcs.get()
+    #используем генератор
+    while True:
+        try:
+            human = next(gen)
+        except:
+            break
+        if isinstance(human, Player):
+            continue
+        actions = [human.rest, human.work, human.travel]
+        action = random.choice(actions)
+        if action == human.travel:
+            action(random.choice(places))
+        else:
+            action()
+        if random.randint(1, 100) <= 5:
+            if not hasattr(human, "car"):
+                car = random.choice(autopark)
+                if not hasattr(car, "owner"):
+                    car.buy(human)
+    if random.randint(1, 100) <= 20:
+        thief.steal(random.choice(npcs.humans))
+    day += 1
